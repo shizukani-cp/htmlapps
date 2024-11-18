@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<htmll>
+
+  <head>
+    <title>noise</title>
+  </head>
+
+  <body>
+    <button>開始</button>
+    <script>
+      const button = document.querySelector("button");
+
+
+      function play() {
+        const ctx = new AudioContext();
+        const oscillator = ctx.createOscillator();
+        oscillator.frequency.setValueAtTime(1000 + 1000 * Math.random(), ctx.currentTime);
+        oscillator.connect(ctx.destination);
+        oscillator.start();
+        play();
+      };
+
+
+      button.onclick = play;
+
+
+    </script>
+  </body>
+
+  </html>

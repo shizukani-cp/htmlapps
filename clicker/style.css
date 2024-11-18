@@ -1,0 +1,19 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    padding-top: 50px;
+    color: #000;
+    background-color: #fff;
+  }
+  
+  #clickArea {
+    display: inline-block;
+    cursor: pointer;
+  }
+  
+  #mainImage {
+    width: 300px;
+    height: auto;
+    transition: transform 0.3s ease-in-out;
+  }
+  

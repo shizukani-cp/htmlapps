@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>insource typing score</title>
+
+  <link </head>
+
+<body>
+  <table id='scores'>
+    <thead>
+      <tr>
+        <th sco<th scope="col">スコア</th>
+
+      </tr>
+    </thead>
+  </table>
+  <script>
+    const tvar scores = JSON.parse(localStorage.getItem('scores'));
+    scores.reverse();
+    for (let row of scores) {
+      row.time = new Date(row.time);
+    } for (let row of scores) {
+      t < tr >
+        <th>${ro < th > ${row.score}</th>
+  </tr >`
+  }
+  </script>
+</body>
+
+</html>    scores.reverse();
+    for (let row of scores) {
+      row.time = new Date(row.time);
+    }
+    for (let row of scores) {
+      table.innerHTML += `
+<tr>
+<th>${row.time.toLocaleString('ja-JP', {timeZone: 'Asia/Tokyo'})}</th>
+<th>${row.score}</th>
+</tr>
+`
+    }
+
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Kusopedia</title>
+  <link rel="stylesheet" type="text/css" href="basestyle.css">
+</head>
+
+<body>
+  <header style="display: flex; width: 100vw">
+    <div>
+      <a href="javascript:void(0);">
+        <img id="logo" src="kusopedia.png" height="70px" style="vertical-align: middle;">
+      </a>
+    </div>
+    <form action="" method="get" style="margin-right: 0px; padding: 15px">
+      <input type="text" name="q" style="height: 45px; text-align: right;">
+      <input type="submit" id="search" class="button" value="検索">
+    </form>
+  </header>
+  <main>
+  </main>
+  <footer style="display: flex; justify-content: center;">
+    <p>言語:</p>
+    <select id="lang">
+      <option value="ja">日本語</option>
+      <option value="en">english</option>
+      <option value="fr">Français</option>
+    </select>
+  </footer>
+  <script>
+    const params = new URL(window.location.href).searchParams;
+    const q = params.get("q");
+    let lang = localStorage.getItem("lang") || "ja";
+
+
+    document.getElementById("lang")
+      .querySelector(`option[value='${lang}']`)
+      .setAttribute("selected", "selected");
+
+
+    function get_text(l, i, q) {
+      return {
+        ja: {
+          search_button: "検索",
+          description: `${q}とは、${q}のことである。`,
+          top: "このページはトップページです。",
+          top_title: "トップ"
+        },
+        en: {
+          search_button: "search",
+          description: `${q} means ${q}.`,
+          top: "This page is the top page.",
+          top_title: "top"
+        },
+        fr: {
+          search_button: "recherche",
+          description: `${q} signifie ${q}.`,
+          top: "Cette page est la première page.",
+          top_title: "haut"
+        }
+      }[l][i];
+    }
+
+
+    if (q) {
+      document.title = `${q} - Kusopedia`;
+      const index_e = document.createElement("h3");
+      index_e.appendChild(document.createTextNode(q));
+      document.querySelector("main").appendChild(index_e);
+
+
+      const description_e = document.createElement("p");
+      description_e.appendChild(document.createTextNode(get_text(lang, "description", q)));
+      document.querySelector("main").appendChild(description_e);
+    } else {
+      document.title = `${get_text(lang, "top_title")} - Kusopedia`;
+      const description_e = document.createElement("p");
+      description_e.appendChild(document.createTextNode(get_text(lang, "top")));
+      document.querySelector("main").appendChild(description_e);
+    }
+
+
+    document.getElementById("search").setAttribute("value", get_text(lang, "search_button"));
+
+
+    document.getElementById("logo").addEventListener("click", () => {
+      location.href = "./kusopedia.html";
+    });
+
+
+    document.getElementById("lang").addEventListener("change", (e) => {
+      localStorage.setItem("lang", e.target.value);
+      location.reload();
+    });
+  </script>
+</body>
+
+</html>

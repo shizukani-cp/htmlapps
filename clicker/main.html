@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>静カニクリッカー</title>
+  <link rel="stylesheet" href="basestyle.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>静カニクリッカー</h1>
+  <div id="clickArea">
+    <img id="mainImage" src="shizukani.png" alt="クリック！">
+  </div>
+  <p></p>
+  <button id="upgradeButton" class="button"><input type="checkbox" id="autoClickUpgradeButton">増加量をアップグレード（コスト: <span
+      id="upgradeCost">10</span>）</button>
+  <button id="summonHelperButton" class="button"><input type="checkbox" id="autoClickSummonHelperButton">助っ人を召喚（コスト:
+    <span id="helperCost">50</span>）</button>
+  <button id="buyGunButton" class="button"><input type="checkbox" id="autoClickBuyGunButton">マシンガンを購入（コスト: <span
+      id="buyGunCost">100000</span>）</button>
+  <br>
+  <label>バイナリモード</label><input type="checkbox" id="binaryMode">
+  <script src="main.js"></script>
+</body>
+
+</html>

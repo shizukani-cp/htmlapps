@@ -1,0 +1,72 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+}
+
+ebar {
+  width: 200px;
+  color: #000;
+
+  paddin
+}
+
+n {
+  flex: 1;
+  padding: 20px;
+}
+
+#o-title {
+  font-size: 1.8rem;
+
+  textarea {
+    height: 400px
+  }
+
+  ul {
+    list-sty padding: 0;
+
+    li {
+      cursor: pointer;
+
+    }
+
+    li:hover {
+      color: blue;
+    }
+
+    . display: block;
+
+    width: margin-bottom: 10px;
+    padding: 8px background-color: #4CAF50;
+    color: white;
+  }
+
+  . background-color: #45a049;
+
+}
+
+.delete-button {
+  background-color: #f00
+}  cursor: pointer;
+}
+
+li:hover {
+  color: blue;
+}
+
+.button {
+  display: block;
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+  background-color: #4CAF50;
+  color: white;
+}
+
+.button:hover {
+  background-color: #45a049;
+}
+
+.delete-button {
+  background-color: #f00;
+}

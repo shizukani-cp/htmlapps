@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>typing</title>
+  <meta charset=”UTF-8”>
+  <link rel="stylesheet" type="text/css" href="basestyle.css">
+</head>
+
+<body>
+  <p id='quest'></p>
+  <textarea id='game'></textarea>
+  <div>
+    <p>自分のHP</p>
+    <meter id='player_hp_meter' min='0'></meter>
+    <p>敵のHP</p>
+    <meter id='enemy_hp_meter' min='0'></meter>
+  </div>
+  <script>
+    const letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', ',', '.', '/', ';', ':', '[', ']', '@', '-', '^', '¥', 'Enter', 'Shift'];
+    let text = document.getElementById('game');
+    let question = document.getElementById('quest');
+    const player_hp_meter = document.getElementById('player_hp_meter');
+    const enemy_hp_meter = document.getElementById('enemy_hp_meter');
+    let quest = letters[Math.floor(Math.random() * letters.length)];
+    question.innerHTML = quest;
+    const player_max_hp = localStorage.getItem('player_hp');
+    const enemy_max_hp = localStorage.getItem('enemy_hp');
+    let player_hp = player_max_hp;
+    let enemy_hp = enemy_max_hp;
+    const miss = localStorage.getItem('miss');
+    const attack_interval = localStorage.getItem('interval');
+    player_hp_meter.setAttribute('max', String(player_max_hp));
+    enemy_hp_meter.setAttribute('max', String(enemy_max_hp));
+    player_hp_meter.setAttribute('low', String(player_max_hp / 5));
+    enemy_hp_meter.setAttribute('low', String(enemy_max_hp / 5));
+    const scores = JSON.parse(localStorage.getItem('scores'));
+    const stime = Date.now()
+
+    function keyDown(event) {
+      //console.log('KeyDown:' + event.key);
+      if (event.key === quest) {
+        quest = letters[Math.floor(Math.random() * letters.length)];
+        question.innerHTML = quest;
+        enemy_hp -= 5;
+        enemy_hp_meter.setAttribute('class', 'damage');
+      } else {
+        player_hp -= 1;
+        player_hp_meter.setAttribute('class', '');
+      }
+      text.value = '';
+    }
+    text.addEventListener('keydown', keyDown);
+    function tick() {
+      text.focus();
+      player_hp_meter.setAttribute('class', '');
+      enemy_hp_meter.setAttribute('class', '');
+      player_hp_meter.setAttribute('value', String(player_hp));
+      enemy_hp_meter.setAttribute('value', String(enemy_hp));
+      if (player_hp <= 0) {
+        addScore(-enemy_hp);
+      } else if (enemy_hp <= 0) {
+        addScore(Math.floor(100 / (Date.now() - stime) + (player_hp / player_max_hp) * 100));
+      }
+    }
+
+    function addScore(score) {
+      scores.push({
+        time: Date.now(),
+        score: score
+      });
+      localStorage.setItem('scores', JSON.stringify(scores));
+      window.close();
+    }
+
+    let intervalId1 = setInterval(tick, 50);
+    function attack() {
+      if (Math.floor(Math.random() * (miss + 1)) >= 1) {
+        player_hp -= 1;
+        player_hp_meter.setAttribute('class', 'damage');
+      } else {
+        enemy_hp -= 1;
+        enemy_hp_meter.setAttribute('class', 'damage');
+      }
+    }
+    let intervalId2 = setInterval(attack, attack_interval);
+  </script>
+  <style>
+    textarea {
+      width: 1px;
+      height: 1px;
+      resize: none
+    }
+
+    meter {
+      width: 50em;
+      height: 3em;
+    }
+
+    meter.damage {
+      background: #ff0000;
+    }
+  </style>
+</body>
+
+</html>
