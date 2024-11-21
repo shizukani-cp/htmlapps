@@ -166,9 +166,9 @@ function updateUpgradeCost() {
 // 助っ人召喚コスト表示を更新する関数
 function updateHelperCost() {
   if (binaryModeE.checked) {
-    helperCost.textContent = helperCost.toString(2);
+    helperCostE.textContent = helperCost.toString(2);
   } else {
-    helperCost.textContent = helperCost;
+    helperCostE.textContent = helperCost;
   }
 }
 
