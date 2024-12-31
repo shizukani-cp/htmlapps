@@ -37,12 +37,12 @@
   <script>
     const game = document.getElementById('typing');
     const formElements = document.forms['setting'];
-    var scores = JSON.parse(localStorage.getItem('scores'));
+    let scores = JSON.parse(localStorage.getItem('scores')) || [0];
 
-    formElements['player_hp'].value = localStorage.getItem('player_hp');
-    formElements['enemy_hp'].value = localStorage.getItem('enemy_hp');
-    formElements['miss'].value = localStorage.getItem('miss');
-    formElements['interval'].value = localStorage.getItem('interval');
+    formElements['player_hp'].value = localStorage.getItem('player_hp') || 100;
+    formElements['enemy_hp'].value = localStorage.getItem('enemy_hp') || 100;
+    formElements['miss'].value = localStorage.getItem('miss') || 10;
+    formElements['interval'].value = localStorage.getItem('interval') || 200;
 
     function start() {
       localStorage.setItem('player_hp', formElements['player_hp'].value);

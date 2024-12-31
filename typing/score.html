@@ -16,7 +16,7 @@
     </thead>
   </table>
   <script>
-    const scores = JSON.parse(localStorage.getItem('scores'));
+    const scores = JSON.parse(localStorage.getItem('scores')) || [0];
     scores.reverse();
     for (let row of scores) {
       row.time = new Date(row.time);
