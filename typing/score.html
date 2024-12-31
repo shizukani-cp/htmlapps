@@ -4,31 +4,20 @@
 <head>
   <title>insource typing score</title>
 
-  <link </head>
+  <link rel="stylesheet" href="https://shizukani-cp.github.io/basestyle.css/basestyle-dark.css">
+</head>
 
 <body>
   <table id='scores'>
     <thead>
       <tr>
-        <th sco<th scope="col">スコア</th>
-
+        <th scope="col">スコア</th>
       </tr>
     </thead>
   </table>
   <script>
-    const tvar scores = JSON.parse(localStorage.getItem('scores'));
+    const scores = JSON.parse(localStorage.getItem('scores'));
     scores.reverse();
-    for (let row of scores) {
-      row.time = new Date(row.time);
-    } for (let row of scores) {
-      t < tr >
-        <th>${ro < th > ${row.score}</th>
-  </tr >`
-  }
-  </script>
-</body>
-
-</html>    scores.reverse();
     for (let row of scores) {
       row.time = new Date(row.time);
     }
@@ -40,6 +29,7 @@
 </tr>
 `
     }
+
 
   </script>
 </body>

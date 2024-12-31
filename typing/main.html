@@ -1,61 +1,64 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Let's insource typing!</title>
-<link rel="stylesheet" type="text/css" href="basestyle.css">
+  <title>Let's insource typing!</title>
+  <link rel="stylesheet" type="text/css" href="https://shizukani-cp.github.io/basestyle.css/basestyle-dark.css">
 </head>
+
 <body>
-<div id='typing'></div>
-<form action='' method = 'post' name='setting'>
-<div>
-<input type='submit' value='開始' onclick='start()'>
-</div>
-<div>
-<label for='player_hp'>自分のHP:</label>
-<input type='text' id='player_hp' name='player_hp' value='100'>
-</div>
-<div>
-<label for='enemy_hp'>敵のHP:</label>
-<input type='text' id='enemy_hp' name='enemy_hp' value='100'>
-</div>
-<div>
-<label for='miss'>敵がミスする確率(?分の一):</label>
-<input type='text' id='miss' name='miss' value='10'>
-</div>
-<div>
-<label for='interval'>敵の攻撃間隔(ミリ秒):</label>
-<input type='text' id='interval' name='interval' value='200'>
-</div>
-</form>
-<a href='score.html'>スコア</a>
-<div>
-<p id='new'></p>
-<p id='best'></p>
-</div>
-<script>
-const game = document.getElementById('typing');
-const formElements = document.forms['setting'];
-var scores = JSON.parse(localStorage.getItem('scores'));
+  <div id='typing'></div>
+  <form action='' method='post' name='setting'>
+    <div>
+      <input type='submit' value='開始' onclick='start()'>
+    </div>
+    <div>
+      <label for='player_hp'>自分のHP:</label>
+      <input type='text' id='player_hp' name='player_hp' value='100'>
+    </div>
+    <div>
+      <label for='enemy_hp'>敵のHP:</label>
+      <input type='text' id='enemy_hp' name='enemy_hp' value='100'>
+    </div>
+    <div>
+      <label for='miss'>敵がミスする確率(?分の一):</label>
+      <input type='text' id='miss' name='miss' value='10'>
+    </div>
+    <div>
+      <label for='interval'>敵の攻撃間隔(ミリ秒):</label>
+      <input type='text' id='interval' name='interval' value='200'>
+    </div>
+  </form>
+  <a href='score.html'>スコア</a>
+  <div>
+    <p id='new'></p>
+    <p id='best'></p>
+  </div>
+  <script>
+    const game = document.getElementById('typing');
+    const formElements = document.forms['setting'];
+    var scores = JSON.parse(localStorage.getItem('scores'));
 
-formElements['player_hp'].value = localStorage.getItem('player_hp');
-formElements['enemy_hp'].value = localStorage.getItem('enemy_hp');
-formElements['miss'].value = localStorage.getItem('miss');
-formElements['interval'].value = localStorage.getItem('interval');
+    formElements['player_hp'].value = localStorage.getItem('player_hp');
+    formElements['enemy_hp'].value = localStorage.getItem('enemy_hp');
+    formElements['miss'].value = localStorage.getItem('miss');
+    formElements['interval'].value = localStorage.getItem('interval');
 
-function start() {
-    localStorage.setItem('player_hp', formElements['player_hp'].value);
-    localStorage.setItem('enemy_hp', formElements['enemy_hp'].value);
-    localStorage.setItem('miss', formElements['miss'].value);
-    localStorage.setItem('interval', formElements['interval'].value);
-    open('typing.html');
-}
+    function start() {
+      localStorage.setItem('player_hp', formElements['player_hp'].value);
+      localStorage.setItem('enemy_hp', formElements['enemy_hp'].value);
+      localStorage.setItem('miss', formElements['miss'].value);
+      localStorage.setItem('interval', formElements['interval'].value);
+      open('typing.html');
+    }
 
-function tick() {
-    scores = JSON.parse(localStorage.getItem('scores'));
-    document.getElementById('new').innerHTML = `最新のスコア:${scores.at(-1).score}`;
-    document.getElementById('best').innerHTML = `  ベスト記録 :${scores.sort().at(-1).score}`;
-}
-setInterval(tick, 50)
-</script>
+    function tick() {
+      scores = JSON.parse(localStorage.getItem('scores'));
+      document.getElementById('new').innerHTML = `最新のスコア:${scores.at(-1).score}`;
+      document.getElementById('best').innerHTML = `  ベスト記録 :${scores.sort().at(-1).score}`;
+    }
+    setInterval(tick, 50)
+  </script>
 </body>
+
 </html>
