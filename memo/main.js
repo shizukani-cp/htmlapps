@@ -81,7 +81,6 @@ window.onload = function () {
       localStorage.setItem('memos', JSON.stringify(memos));
       refreshMemoList();
       displayMemo(selectedMemo);
-      alert('メモが保存されました。');
     }
   });
 
