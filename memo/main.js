@@ -105,6 +105,7 @@ function displayMemo(memo) {
   const memoContent = document.getElementById('memo-content');
   const displayMarkdownE = document.getElementById("display-markdown");
   const markdownResultE = document.getElementById("markdown-result");
+  const markdownAreaE = document.getElementById("markdown-area");
 
   memoContent.dataset.memoId = memo.id; // データ属性にmemoのidを設定
   memoContent.innerHTML = `
@@ -113,10 +114,11 @@ function displayMemo(memo) {
         `;
 
   if (displayMarkdownE.checked) {
+    markdownAreaE.setAttribute("style", "visibility: visible;")
     markdownResultE.innerHTML = `<h1>${memo.title}</h1>`;
     markdownResultE.innerHTML += marked.parse(memo.content);
   } else {
-    markdownResultE.innerHTML = "";
+    markdownAreaE.setAttribute("style", "visibility: hidden;")
   }
 }
 
