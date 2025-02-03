@@ -8,6 +8,15 @@ if (localStorage.getItem('memos')) {
   localStorage.setItem('memos', JSON.stringify(memos));
 }
 
+window.onbeforeunload = (e) => {
+  if (!window.saved) {
+    if (!window.confirm("保存せずに終了しますか？")) {
+      e.preventDefault();
+    }
+  }
+}
+
+document.getElementById('memo-content').addEventListener("keydown", () => {window.saved = false;});
 
 window.onload = function () {
   const memoList = document.getElementById('memo-list');
@@ -79,6 +88,7 @@ window.onload = function () {
       selectedMemo.title = memoTitle;
       selectedMemo.content = memoBody;
       localStorage.setItem('memos', JSON.stringify(memos));
+      window.saved = true;
       refreshMemoList();
       displayMemo(selectedMemo);
     }
@@ -115,8 +125,7 @@ function deleteMemo(memoId) {
   if (window.confirm('本当に削除しますか？')) {
     memos = memos.filter(memo => memo.id !== memoId);
     localStorage.setItem('memos', JSON.stringify(memos));
-    refreshMemoList();
-    clearMemoContent();
+    location.reload();
   }
 }
 
