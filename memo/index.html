@@ -15,6 +15,9 @@
     <h2>メモ一覧</h2>
     <button class="button" id="new-memo-btn">新規作成</button>
     <button class="button" id="save-memo-btn">保存</button>
+    <button class="button" id="export-memo-btn">メモをエクスポート</button>
+    <input type="file" id="file-input" style="display: none;">
+    <button class="button" id="import-memo-btn" onclick="document.getElementById('file-input').click()">メモをインポート</button>
     <ul id="memo-list">
       <!-- メモの一覧はここに動的に生成されます -->
     </ul>

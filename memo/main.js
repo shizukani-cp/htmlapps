@@ -22,6 +22,8 @@ window.onload = function () {
   const memoList = document.getElementById('memo-list');
   const newMemoBtn = document.getElementById('new-memo-btn');
   const saveMemoBtn = document.getElementById('save-memo-btn');
+  const exportMemoBtn = document.getElementById("export-memo-btn");
+  const fileInputE = document.getElementById("file-input");
 
   memos.forEach(memo => {
     const li = document.createElement('li');
@@ -94,6 +96,35 @@ window.onload = function () {
     }
   });
 
+  exportMemoBtn.addEventListener("click", () => {
+    const memoData = localStorage.getItem("memos");
+    const blob = new Blob([memoData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'memos.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  fileInputE.addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) {
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+        const contents = ev.target.result;
+        if (window.confirm("上書きします。よろしいですか？")) {
+          localStorage.setItem("memos", contents);
+          window.location.reload();
+        }
+    };
+    reader.readAsText(file);
+  });
 
   if (memos.length > 0) {
     displayMemo(memos[0]);
@@ -167,6 +198,7 @@ function clearMemoContent() {
   const mainE = document.getElementById('main');
   mainE.innerHTML = '';
 }
+
 document.addEventListener('keydown', function (event) {
   if (event.ctrlKey && event.key === 's') {
     event.preventDefault(); // デフォルトのブラウザの動作（保存ダイアログなど）を無効化
