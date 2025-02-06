@@ -28,6 +28,7 @@ window.onload = function () {
   memos.forEach(memo => {
     const li = document.createElement('li');
     li.textContent = memo.title;
+    li.setAttribute("class", "memos-li")
     li.dataset.memoId = memo.id; // データ属性にmemoのidを設定
 
 
