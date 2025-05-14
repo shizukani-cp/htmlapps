@@ -10,19 +10,27 @@
 </head>
 
 <body>
-    <h1>静カニクリッカー</h1>
-    <div id="clickArea">
-        <img id="mainImage" src="shizukani.png" alt="クリック！">
-    </div>
-    <p></p>
-    <button id="upgradeButton" class="button"><input type="checkbox" id="autoClickUpgradeButton">増加量をアップグレード（コスト: <span
-      id="upgradeCost">10</span>）</button>
-    <button id="summonHelperButton" class="button"><input type="checkbox" id="autoClickSummonHelperButton">助っ人を召喚（コスト:
-      <span id="helperCost">50</span>）</button>
-    <button id="buyGunButton" class="button"><input type="checkbox" id="autoClickBuyGunButton">マシンガンを購入（コスト: <span
-      id="buyGunCost">100000</span>）</button>
-    <br>
-    <label>バイナリモード</label><input type="checkbox" id="binaryMode">
+    <header>
+        <h1>静カニクリッカー</h1>
+    </header>
+    <main style="display: flex;">
+        <div>
+            <div id="clickArea">
+                <img id="mainImage" src="shizukani.png" alt="クリック！">
+            </div>
+            <p></p>
+        </div>
+        <div style="margin-left: auto; text-align: right;">
+            <button id="upgradeButton" class="button"><input type="checkbox" id="autoClickUpgradeButton">増加量をアップグレード（コスト: <span
+                                                                             id="upgradeCost">10</span>）</button><br />
+            <button id="summonHelperButton" class="button"><input type="checkbox" id="autoClickSummonHelperButton">助っ人を召喚（コスト: <span 
+                                                                             id="helperCost">50</span>）</button><br />
+            <button id="buyGunButton" class="button"><input type="checkbox" id="autoClickBuyGunButton">マシンガンを購入（コスト: <span
+                                                                             id="buyGunCost">100000</span>）</button>
+            <br />
+            <label>バイナリモード</label><input type="checkbox" id="binaryMode">
+        </div>
+    </main>
     <script src="main.js"></script>
 </body>
 
