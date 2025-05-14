@@ -13,11 +13,11 @@ let helperCost = 20;
 let buyGunCost = 1000000;
 let autoClickers = [];
 let gunBought = false;
+let helperInterval = 300;
+let gunInterval = 1;
 
 
 class Helper {
-    static interval = 300;
-
 
     constructor() {
         this.time = 0;
@@ -26,7 +26,7 @@ class Helper {
 
     tick() {
         this.time++;
-        if (this.time % Helper.interval === 0) {
+        if (this.time % helperInterval === 0) {
             this.time = 0;
             document.getElementById("clickArea").click();
             updateScore();
@@ -36,8 +36,6 @@ class Helper {
 
 
 class Gun {
-    static interval = 1;
-
 
     constructor() {
         this.time = 0;
@@ -47,7 +45,7 @@ class Gun {
 
     tick() {
         this.time++;
-        if (this.time % Gun.interval === 0) {
+        if (this.time % gunInterval === 0) {
             this.time = 0;
             document.getElementById("clickArea").click();
             updateScore();
