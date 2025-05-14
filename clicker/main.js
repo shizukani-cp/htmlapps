@@ -1,7 +1,5 @@
-
 const mainImage = document.getElementById("mainImage");
 const scoreE = document.querySelector("p");
-const binaryModeE = document.getElementById("binaryMode");
 const upgradeCostE = document.getElementById("upgradeCost");
 const helperCostE = document.getElementById("helperCost");
 const buyGunCostE = document.getElementById("buyGunCost");
@@ -145,40 +143,24 @@ function executeAutoClick() {
 
 // スコア表示を更新する関数
 function updateScore() {
-    if (binaryModeE.checked) {
-        scoreE.textContent = `スコア:${score.toString(2)} お金:${money.toString(2)}ジンバブエドル 目安:${get_guideline(money)}`
-    } else {
-        scoreE.textContent = `スコア:${score} お金:${money}ジンバブエドル 目安:${get_guideline(money)}`;
-    }
+    scoreE.textContent = `スコア:${score} お金:${money}ジンバブエドル 目安:${get_guideline(money)}`;
 }
 
 
 // アップグレードコスト表示を更新する関数
 function updateUpgradeCost() {
-    if (binaryModeE.checked) {
-        upgradeCostE.textContent = upgradeCost.toString(2);
-    } else {
-        upgradeCostE.textContent = upgradeCost;
-    }
+    upgradeCostE.textContent = upgradeCost;
 }
 
 
 // 助っ人召喚コスト表示を更新する関数
 function updateHelperCost() {
-    if (binaryModeE.checked) {
-        helperCostE.textContent = helperCost.toString(2);
-    } else {
-        helperCostE.textContent = helperCost;
-    }
+    helperCostE.textContent = helperCost;
 }
 
 
 function updateBuyGunCost() {
-    if (binaryModeE.checked) {
-        buyGunCostE.textContent = buyGunCost.toString(2);
-    } else {
-        buyGunCostE.textContent = buyGunCost;
-    }
+    buyGunCostE.textContent = buyGunCost;
 }
 
 
@@ -273,10 +255,3 @@ function autoButtonClick() {
 setInterval(executeAutoClick, 1);
 setInterval(autoButtonClick, 1);
 
-
-binaryModeE.addEventListener("change", () => {
-    updateScore();
-    updateUpgradeCost();
-    updateHelperCost();
-    updateBuyGunCost();
-});
