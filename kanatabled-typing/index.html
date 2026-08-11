@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <title>カスタムkanatable対応タイピング</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 0 20px;
+      line-height: 1.6;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      font-family: monospace;
+    }
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+
+    .display-kanji {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .display-kana {
+      font-size: 1.4rem;
+      color: #666;
+    }
+
+    .input-state {
+      font-size: 1.2rem;
+      color: #555;
+    }
+
+    .ok {
+      color: #28a745;
+      font-weight: bold;
+    }
+
+    .pending {
+      color: #ffc107;
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>カスタムkanatableタイピング</h1>
+
+  <div class="card">
+    <h2>1. kanatable設定 (JSONオブジェクト形式)</h2>
+    <textarea id="tableInput"></textarea><br>
+    <button onclick="applyTable()">テーブル適用</button>
+  </div>
+
+  <div class="card">
+    <h2>2. プレイエリア</h2>
+    <p>お題: <span id="targetKanji" class="display-kanji"></span></p>
+    <p>読み: <span id="targetKana" class="display-kana"></span></p>
+    <p>入力済みかな: <span id="typedKana" class="input-state ok"></span></p>
+    <p>入力中キー: <span id="currentBuffer" class="input-state pending"></span></p>
+  </div>
+
+  <script>
+    const defaultTableSource = `{
+  "!": ["！", ""],
+  ",": ["、", ""],
+  "-": ["ー", ""],
+  ".": ["。", ""],
+  ":": ["：", ""],
+  "?": ["？", ""],
+  "[": ["「", ""],
+  "]": ["」", ""],
+  "a": ["あ", ""],
+  "ba": ["ば", ""],
+  "bb": ["っ", "b"],
+  "be": ["べ", ""],
+  "bi": ["び", ""],
+  "bo": ["ぼ", ""],
+  "bu": ["ぶ", ""],
+  "bya": ["びゃ", ""],
+  "bye": ["びぇ", ""],
+  "byi": ["びぃ", ""],
+  "byo": ["びょ", ""],
+  "byu": ["びゅ", ""],
+  "cc": ["っ", "c"],
+  "cha": ["ちゃ", ""],
+  "che": ["ちぇ", ""],
+  "chi": ["ち", ""],
+  "cho": ["ちょ", ""],
+  "chu": ["ちゅ", ""],
+  "cya": ["ちゃ", ""],
+  "cye": ["ちぇ", ""],
+  "cyi": ["ちぃ", ""],
+  "cyo": ["ちょ", ""],
+  "cyu": ["ちゅ", ""],
+  "da": ["だ", ""],
+  "dd": ["っ", "d"],
+  "de": ["で", ""],
+  "dha": ["でゃ", ""],
+  "dhe": ["でぇ", ""],
+  "dhi": ["でぃ", ""],
+  "dho": ["でょ", ""],
+  "dhu": ["でゅ", ""],
+  "di": ["ぢ", ""],
+  "do": ["ど", ""],
+  "du": ["づ", ""],
+  "dya": ["ぢゃ", ""],
+  "dye": ["ぢぇ", ""],
+  "dyi": ["ぢぃ", ""],
+  "dyo": ["ぢょ", ""],
+  "dyu": ["ぢゅ", ""],
+  "e": ["え", ""],
+  "fa": ["ふぁ", ""],
+  "fe": ["ふぇ", ""],
+  "ff": ["っ", "f"],
+  "fi": ["ふぃ", ""],
+  "fo": ["ふぉ", ""],
+  "fu": ["ふ", ""],
+  "fya": ["ふゃ", ""],
+  "fye": ["ふぇ", ""],
+  "fyi": ["ふぃ", ""],
+  "fyo": ["ふょ", ""],
+  "fyu": ["ふゅ", ""],
+  "ga": ["が", ""],
+  "ge": ["げ", ""],
+  "gg": ["っ", "g"],
+  "gi": ["ぎ", ""],
+  "go": ["ご", ""],
+  "gu": ["ぐ", ""],
+  "gya": ["ぎゃ", ""],
+  "gye": ["ぎぇ", ""],
+  "gyi": ["ぎぃ", ""],
+  "gyo": ["ぎょ", ""],
+  "gyu": ["ぎゅ", ""],
+  "ha": ["は", ""],
+  "he": ["へ", ""],
+  "hh": ["っ", "h"],
+  "hi": ["ひ", ""],
+  "ho": ["ほ", ""],
+  "hu": ["ふ", ""],
+  "hya": ["ひゃ", ""],
+  "hye": ["ひぇ", ""],
+  "hyi": ["ひぃ", ""],
+  "hyo": ["ひょ", ""],
+  "hyu": ["ひゅ", ""],
+  "i": ["い", ""],
+  "ja": ["じゃ", ""],
+  "je": ["じぇ", ""],
+  "ji": ["じ", ""],
+  "jj": ["っ", "j"],
+  "jo": ["じょ", ""],
+  "ju": ["じゅ", ""],
+  "jya": ["じゃ", ""],
+  "jye": ["じぇ", ""],
+  "jyi": ["じぃ", ""],
+  "jyo": ["じょ", ""],
+  "jyu": ["じゅ", ""],
+  "ka": ["か", ""],
+  "ke": ["け", ""],
+  "ki": ["き", ""],
+  "kk": ["っ", "k"],
+  "ko": ["こ", ""],
+  "ku": ["く", ""],
+  "kya": ["きゃ", ""],
+  "kye": ["きぇ", ""],
+  "kyi": ["きぃ", ""],
+  "kyo": ["きょ", ""],
+  "kyu": ["きゅ", ""],
+  "ma": ["ま", ""],
+  "me": ["め", ""],
+  "mi": ["み", ""],
+  "mm": ["っ", "m"],
+  "mo": ["も", ""],
+  "mu": ["む", ""],
+  "mya": ["みゃ", ""],
+  "mye": ["みぇ", ""],
+  "myi": ["みぃ", ""],
+  "myo": ["みょ", ""],
+  "myu": ["みゅ", ""],
+  "n": ["ん", ""],
+  "na": ["な", ""],
+  "ne": ["ね", ""],
+  "ni": ["に", ""],
+  "nn": ["ん", ""],
+  "no": ["の", ""],
+  "nu": ["ぬ", ""],
+  "nya": ["にゃ", ""],
+  "nye": ["にぇ", ""],
+  "nyi": ["にぃ", ""],
+  "nyo": ["にょ", ""],
+  "nyu": ["にゅ", ""],
+  "o": ["お", ""],
+  "pa": ["ぱ", ""],
+  "pe": ["ぺ", ""],
+  "pi": ["ぴ", ""],
+  "po": ["ぽ", ""],
+  "pp": ["っ", "p"],
+  "pu": ["ぷ", ""],
+  "pya": ["ぴゃ", ""],
+  "pye": ["ぴぇ", ""],
+  "pyi": ["ぴぃ", ""],
+  "pyo": ["ぴょ", ""],
+  "pyu": ["ぴゅ", ""],
+  "ra": ["ら", ""],
+  "re": ["れ", ""],
+  "ri": ["り", ""],
+  "ro": ["ろ", ""],
+  "rr": ["っ", "r"],
+  "ru": ["る", ""],
+  "rya": ["りゃ", ""],
+  "rye": ["りぇ", ""],
+  "ryi": ["りぃ", ""],
+  "ryo": ["りょ", ""],
+  "ryu": ["りゅ", ""],
+  "sa": ["さ", ""],
+  "se": ["せ", ""],
+  "sha": ["しゃ", ""],
+  "she": ["しぇ", ""],
+  "shi": ["し", ""],
+  "sho": ["しょ", ""],
+  "shu": ["しゅ", ""],
+  "si": ["し", ""],
+  "so": ["そ", ""],
+  "ss": ["っ", "s"],
+  "su": ["す", ""],
+  "sya": ["しゃ", ""],
+  "sye": ["しぇ", ""],
+  "syi": ["しぃ", ""],
+  "syo": ["しょ", ""],
+  "syu": ["しゅ", ""],
+  "ta": ["た", ""],
+  "te": ["て", ""],
+  "tha": ["てぁ", ""],
+  "the": ["てぇ", ""],
+  "thi": ["てぃ", ""],
+  "tho": ["てょ", ""],
+  "thu": ["てゅ", ""],
+  "ti": ["ち", ""],
+  "to": ["と", ""],
+  "tsu": ["つ", ""],
+  "tt": ["っ", "t"],
+  "tu": ["つ", ""],
+  "tya": ["ちゃ", ""],
+  "tye": ["ちぇ", ""],
+  "tyi": ["ちぃ", ""],
+  "tyo": ["ちょ", ""],
+  "tyu": ["ちゅ", ""],
+  "u": ["う", ""],
+  "va": ["ゔぁ", ""],
+  "ve": ["ゔぇ", ""],
+  "vi": ["ゔぃ", ""],
+  "vo": ["ゔぉ", ""],
+  "vu": ["ゔ", ""],
+  "vv": ["っ", "v"],
+  "wa": ["わ", ""],
+  "we": ["うぇ", ""],
+  "wi": ["うぃ", ""],
+  "wo": ["を", ""],
+  "wu": ["う", ""],
+  "ww": ["っ", "w"],
+  "xa": ["ぁ", ""],
+  "xe": ["ぇ", ""],
+  "xi": ["ぃ", ""],
+  "xka": ["か", ""],
+  "xke": ["け", ""],
+  "xo": ["ぉ", ""],
+  "xtsu": ["っ", ""],
+  "xtu": ["っ", ""],
+  "xu": ["ぅ", ""],
+  "xwa": ["ゎ", ""],
+  "xwe": ["ゑ", ""],
+  "xwi": ["ゐ", ""],
+  "xx": ["っ", "x"],
+  "xya": ["ゃ", ""],
+  "xyo": ["ょ", ""],
+  "xyu": ["ゅ", ""],
+  "ya": ["や", ""],
+  "ye": ["いぇ", ""],
+  "yo": ["よ", ""],
+  "yu": ["ゆ", ""],
+  "yy": ["っ", "y"],
+  "z(": ["（", ""],
+  "z)": ["）", ""],
+  "z,": ["‥", ""],
+  "z-": ["〜", ""],
+  "z.": ["…", ""],
+  "z/": ["・", ""],
+  "z[": ["『", ""],
+  "z]": ["』", ""],
+  "za": ["ざ", ""],
+  "ze": ["ぜ", ""],
+  "zh": ["←", ""],
+  "zi": ["じ", ""],
+  "zj": ["↓", ""],
+  "zk": ["↑", ""],
+  "zl": ["→", ""],
+  "zo": ["ぞ", ""],
+  "zu": ["ず", ""],
+  "zya": ["じゃ", ""],
+  "zye": ["じぇ", ""],
+  "zyi": ["じぃ", ""],
+  "zyo": ["じょ", ""],
+  "zyu": ["じゅ", ""],
+  "zz": ["っ", "z"]
+}`;
+
+    // 漢字とかなのオブジェクト配列に改修
+    const questions = [
+      {kanji: "今日はいい天気な気がします", kana: "きょうはいいてんきなきがします"},
+      {kanji: "布団が私を強く引き留めます", kana: "ふとんがわたしをつよくひきとめます"},
+      {kanji: "猫の肉球は奇跡の感触です", kana: "ねこのにくきゅうはきせきのかんしょくです"},
+      {kanji: "昨日の自分に勝った気がします", kana: "きのうのじぶんにかったきがします"},
+      {kanji: "プリンは飲み物だと信じています", kana: "ぷりんはのみものだとしんじています"},
+      {kanji: "あと５分だけ寝かせてください", kana: "あとごふんだけねかせてください"},
+      {kanji: "冷蔵庫のプリンが消えました", kana: "れいぞうこのぷりんがきえました"},
+      {kanji: "wifiの機嫌がすこぶる悪いです", kana: "わいふぁいのきげんがすこぶるわるいです"},
+      {kanji: "靴下が片方だけ行方不明です", kana: "くつしたがかたほうだけゆくえふめいです"},
+      {kanji: "推しの笑顔が地球を救います", kana: "おしのえがおがちきゅうをすくいます"},
+      {kanji: "やる気は明日から出す予定です", kana: "やるきはあしたからだすよていです"},
+      {kanji: "リモコンの電池が切れかかっています", kana: "りもこんのでんちがきれかかっています"},
+      {kanji: "ポテチを開ける手が止まりません", kana: "ぽてちをあけるてがとまりません"},
+      {kanji: "キーボードの打鍵感が最高です", kana: "きーぼーどのだけんかんがさいこうです"},
+      {kanji: "深夜のラーメンは悪魔の味です", kana: "しんやのらーめんはあくまのあじです"},
+      {kanji: "パスワードをまた忘れました", kana: "ぱすわーどをまたわすれました"},
+      {kanji: "ブラインドタッチを極めたいです", kana: "ぶらいんどたっちをきわめたいです"},
+      {kanji: "角に小指をぶつけて泣きました", kana: "かどにこゆびをぶつけてなきました"},
+      {kanji: "コーヒーをこぼして大惨事です", kana: "こーひーをこぼしてだいさんじです"},
+      {kanji: "充電コードの長さが足りません", kana: "じゅうでんこーどのながさがたりません"},
+      {kanji: "休日はあっという間に過ぎ去ります", kana: "きゅうじつはあっというまにすぎさります"},
+      {kanji: "二度寝の誘惑には勝てません", kana: "にどねのゆうわくにはかてません"},
+      {kanji: "アイスを食べても罪悪感ゼロです", kana: "あいすをたべてもざいあくかんぜろです"},
+      {kanji: "急な雨で傘を持っていません", kana: "きゅうなあめでかさをもっていません"},
+      {kanji: "このボタンを押すと爆発します", kana: "このぼたんをおすとばくはつします"},
+      {kanji: "スマホを探したら手に持っていました", kana: "すまほをさがしたらてにもっていました"},
+      {kanji: "宇宙人の仕業だとしか思えません", kana: "うちゅうじんのしわざだとしかおもえません"},
+      {kanji: "焼き肉の匂いだけでご飯が進みます", kana: "やきにくのにおいだけでごはんがすすみます"},
+      {kanji: "今日の晩ご飯はハンバーグです", kana: "きょうのばんごはんははんばーぐです"},
+      {kanji: "誤字脱字のプロフェッショナルです", kana: "ごじだつじのぷろふぇっしょなるです"},
+      {kanji: "エレベーターのボタンを押し間違えました", kana: "えれべーたーのぼたんをおしまちがえました"},
+      {kanji: "私の秘められた能力が覚醒します", kana: "わたしのひめられたのうりょくがかくせいします"},
+      {kanji: "コンビニの新作スイーツを買いました", kana: "こんびにのしんさくすいーつをかいました"},
+      {kanji: "目覚まし時計を三つセットしました", kana: "めざましどけいをみっつせっとしました"},
+      {kanji: "階段を一段飛ばして登ります", kana: "かいだんをいちだんとばしてのぼります"},
+      {kanji: "夢の中で空を飛ぶ練習をしました", kana: "ゆめのなかでそらをとぶれんしゅうをしました"},
+      {kanji: "電子レンジの加熱が終わりました", kana: "でんしれんじのかねつがおわりました"},
+      {kanji: "昨日の夕飯のメニューを忘れました", kana: "きのうのゆうはんのめにゅーをわすれました"},
+      {kanji: "エアコンの風が心地よすぎます", kana: "えあこんのかぜがここちよすぎます"},
+      {kanji: "背後に気配を感じる気がします", kana: "はいごにけはいをかんじるきがします"},
+      {kanji: "パンの焼き加減が完璧です", kana: "ぱんのやきかげんがかんぺきです"},
+      {kanji: "イヤホンのコードが絡まりました", kana: "いやほんのこーどがからまりました"},
+      {kanji: "筋トレは明日から本気を出します", kana: "きんとれはあしたからほんきをだします"},
+      {kanji: "全自動で部屋が掃除されればいいのに", kana: "ぜんじどうでへやがそうじされればいいのに"},
+      {kanji: "メガネを探したら頭の上でした", kana: "めがねをさがしたらあたまのうえでした"},
+      {kanji: "サクサクの衣が最高の揚げ物です", kana: "さくさくのころもがさいこうのあげものです"},
+      {kanji: "金曜日の夜はテンションが上がります", kana: "きんようびのよるはてんしょんがあがります"},
+      {kanji: "キーボードの隙間にゴミが挟まりました", kana: "きーぼーどのすきまにごみがはさまりました"},
+      {kanji: "このタイピング速度は神の領域です", kana: "このたいぴんぐそくどはかみのりょういきです"},
+      {kanji: "お疲れ様でしたそろそろ休憩しましょう", kana: "おつかれさまでしたそろそろきゅうけいしましょう"}
+    ];
+
+    let kanaTable = {};
+    let currentQuestion = {};
+    let typed = "";
+    let buffer = "";
+
+    function applyTable() {
+      try {
+        const raw = document.getElementById("tableInput").value;
+        kanaTable = JSON.parse(raw.replace(/'/g, '"').replace(/\/\/.*$/gm, ""));
+        console.log("テーブル読み込みに成功しました");
+        resetGame();
+      } catch (e) {
+        alert('形式が正しくありません。JSONオブジェクト形式 { "key": ["かな", "next"], ... } で書いてください。');
+      }
+    }
+
+    function resetGame() {
+      const qIdx = Math.floor(Math.random() * questions.length);
+      currentQuestion = questions[qIdx];
+      typed = "";
+      buffer = "";
+      updateUI();
+    }
+
+    function updateUI() {
+      document.getElementById("targetKanji").innerText = currentQuestion.kanji || "";
+      document.getElementById("targetKana").innerText = currentQuestion.kana || "";
+      document.getElementById("typedKana").innerText = typed;
+      document.getElementById("currentBuffer").innerText = buffer;
+    }
+
+    window.addEventListener("keydown", (e) => {
+      // 1. 設定エリア等の入力中は無視
+      if (["TEXTAREA", "INPUT"].includes(e.target.tagName)) return;
+      if (e.ctrlKey || e.metaKey) return;
+
+      // 2. バックスペース処理
+      if (e.key === "Backspace") {
+        e.preventDefault();
+        buffer = buffer.slice(0, -1);
+        updateUI();
+        return;
+      }
+
+      if (e.key.length !== 1) return;
+
+      const nextBuffer = buffer + e.key;
+      const keys = Object.keys(kanaTable);
+      const targetKana = currentQuestion.kana;
+
+      // 3. 完全一致ルールがあるか判定
+      const exactValue = kanaTable[nextBuffer];
+
+      // 4. より長いキー候補が存在するかチェック（'k' に対する 'ka', 'kyu' など）
+      const hasLongerCandidate = keys.some(k => k.startsWith(nextBuffer) && k !== nextBuffer);
+
+      // 5. より長い候補があるなら保留して次入力待ち
+      if (hasLongerCandidate) {
+        buffer = nextBuffer;
+        updateUI();
+        return;
+      }
+
+      // 6. 最長候補がなく、完全一致する場合に確定処理を実行
+      if (exactValue) {
+        const [kana, carryOver] = exactValue;
+        const newTyped = typed + kana;
+
+        // お題（かな）と前方一致しているか確認
+        if (targetKana.startsWith(newTyped)) {
+          typed = newTyped;
+          buffer = carryOver;
+
+          if (typed === targetKana) {
+            setTimeout(() => {
+              resetGame();
+            }, 100);
+          }
+          updateUI();
+          return;
+        } else {
+          // お題と一致しない入力はバッファクリア
+          buffer = "";
+          updateUI();
+          return;
+        }
+      }
+
+      // 7. そもそも前方一致すら存在しない無効キー判定
+      const hasPrefix = keys.some(k => k.startsWith(nextBuffer));
+      if (hasPrefix) {
+        buffer = nextBuffer;
+      } else {
+        console.log("無効なキー入力です");
+        buffer = "";
+      }
+
+      updateUI();
+    });
+
+    // 初期化
+    document.getElementById("tableInput").value = defaultTableSource;
+    applyTable();
+  </script>
+</body>
+
+</html>
