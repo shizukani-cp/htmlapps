@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>カラーパレット最近似色チェッカー</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .color-card-shadow {
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+    }
+  </style>
+</head>
+
+<body class="bg-slate-900 text-slate-100 min-h-screen pb-12">
+
+  <!-- Header Navigation -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50">
+    <div class="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-pink-500 flex items-center justify-center text-white shadow-lg">
+          <i class="fa-solid fa-palette text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent">Color
+            Matcher Pro</h1>
+          <p class="text-xs text-slate-400">Lab色空間 (CIE76) に基づく最近似色検索ツール</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="max-w-6xl mx-auto px-4 mt-8 space-y-8">
+
+    <!-- Top Grid: Target Color & Best Match -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Left: Target Color Input -->
+      <section
+        class="lg:col-span-5 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 backdrop-blur-md space-y-6">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-semibold flex items-center gap-2 text-indigo-400">
+            <i class="fa-solid fa-[#fa-crosshairs] fa-crosshairs"></i> 1. 探したい色（ターゲット）
+          </h2>
+          <span
+            class="text-xs bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 px-2.5 py-1 rounded-full">入力ソース</span>
+        </div>
+
+        <!-- Color Preview Box & Picker -->
+        <div class="flex flex-col items-center justify-center gap-4">
+          <div id="targetPreview"
+            class="w-full h-40 rounded-xl shadow-inner border border-white/10 transition-all duration-300 relative flex items-center justify-center overflow-hidden group">
+            <input type="color" id="colorPicker" value="#3b82f6"
+              class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+            <div
+              class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-lg text-xs font-mono opacity-80 group-hover:opacity-100 transition-opacity flex items-center gap-2 pointer-events-none">
+              <i class="fa-solid fa-eyedropper"></i> クリックでカラーピッカー起動
+            </div>
+          </div>
+
+          <!-- HEX Input -->
+          <div class="w-full space-y-2">
+            <label class="text-xs text-slate-400 font-medium">カラーコード (HEX)</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 font-mono">#</span>
+              <input type="text" id="hexInput" value="3b82f6" maxlength="6"
+                class="w-full bg-slate-900 border border-slate-700 rounded-xl py-3 pl-8 pr-12 font-mono text-lg font-semibold tracking-wider text-white focus:outline-none focus:border-indigo-500 transition-colors uppercase">
+              <button id="copyHexBtn"
+                class="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs transition-colors">
+                <i class="fa-regular fa-copy"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Color Details (RGB / HSL) -->
+        <div class="grid grid-cols-2 gap-3 pt-2 text-xs font-mono text-slate-400">
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700/40">
+            <span class="block text-slate-500 mb-1">RGB</span>
+            <span id="targetRgb" class="text-slate-200 font-bold">rgb(59, 130, 246)</span>
+          </div>
+          <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-700/40">
+            <span class="block text-slate-500 mb-1">CIE-Lab</span>
+            <span id="targetLab" class="text-slate-200 font-bold">L:55 a:9 b:-60</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right: Best Match Result -->
+      <section
+        class="lg:col-span-7 bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 backdrop-blur-md flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-semibold flex items-center gap-2 text-emerald-400">
+              <i class="fa-solid fa-trophy"></i> 2. パレット内の最も近い色
+            </h2>
+            <span id="matchScoreBadge"
+              class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-mono">
+              Delta-E: 0.00
+            </span>
+          </div>
+
+          <!-- Comparison Display -->
+          <div class="grid grid-cols-2 gap-4 h-48 mb-6">
+            <!-- Target Color -->
+            <div id="compareTarget"
+              class="rounded-xl p-4 flex flex-col justify-end text-white relative shadow-md transition-all">
+              <span class="text-xs uppercase opacity-80 font-mono tracking-wider">Target Color</span>
+              <span id="compareTargetHex" class="font-mono text-lg font-bold">#3B82F6</span>
+            </div>
+            <!-- Best Match Color -->
+            <div id="bestMatchBox"
+              class="rounded-xl p-4 flex flex-col justify-end text-white relative shadow-md transition-all">
+              <span class="text-xs uppercase opacity-80 font-mono tracking-wider">Best Match</span>
+              <span id="bestMatchName" class="font-sans text-xl font-bold truncate">Blue 500</span>
+              <span id="bestMatchHex" class="font-mono text-sm font-semibold opacity-90">#3B82F6</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match Metrics -->
+        <div class="bg-slate-900/60 rounded-xl p-4 border border-slate-700/40 space-y-3">
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400">視覚的類似度</span>
+            <span id="matchPercentage" class="font-bold text-emerald-400 font-mono">100% 一致</span>
+          </div>
+          <div class="w-full bg-slate-800 rounded-full h-2.5 overflow-hidden">
+            <div id="matchProgressBar" class="bg-emerald-500 h-2.5 rounded-full transition-all duration-500"
+              style="width: 100%"></div>
+          </div>
+          <p id="matchDescription" class="text-xs text-slate-400 italic">
+            人間の目には実質的に全く同じ色に見えます。
+          </p>
+        </div>
+      </section>
+    </div>
+
+    <!-- Palette Selector & Custom Color Add -->
+    <section class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 backdrop-blur-md space-y-6">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <h2 class="text-lg font-semibold flex items-center gap-2 text-indigo-400">
+          <i class="fa-solid fa-swatchbook"></i> 3. 検索対象カラーパレット
+        </h2>
+
+        <!-- Preset Selectors -->
+        <div class="flex flex-wrap items-center gap-2">
+          <button data-preset="tailwind"
+            class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-indigo-600 text-white transition-all">
+            Tailwind CSS
+          </button>
+          <button data-preset="material"
+            class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all">
+            Material Design
+          </button>
+          <button data-preset="websafe"
+            class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all">
+            Web Safe (16色)
+          </button>
+          <button data-preset="japanese"
+            class="preset-btn px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-700 text-slate-300 hover:bg-slate-600 transition-all">
+            日本の伝統色
+          </button>
+        </div>
+      </div>
+
+      <!-- Custom Palette Inputs -->
+      <div class="flex flex-col sm:flex-row gap-3 pt-2">
+        <input type="text" id="customColorName" placeholder="色名 (例: ミントグリーン)"
+          class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm text-white focus:outline-none focus:border-indigo-500 sm:w-1/3">
+        <input type="text" id="customColorHex" placeholder="HEX (例: #2ecc71)"
+          class="bg-slate-900 border border-slate-700 rounded-xl px-4 py-2 text-sm font-mono text-white focus:outline-none focus:border-indigo-500 sm:w-1/3">
+        <button id="addCustomColorBtn"
+          class="bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2 rounded-xl transition-colors flex items-center justify-center gap-2">
+          <i class="fa-solid fa-plus"></i> 色を追加
+        </button>
+      </div>
+
+      <!-- Text Bulk Import Option -->
+      <div class="bg-slate-900/60 p-4 rounded-xl border border-slate-700/50 space-y-3">
+        <div class="flex justify-between items-center">
+          <label class="text-xs font-semibold text-slate-300 flex items-center gap-2">
+            <i class="fa-solid fa-file-code text-indigo-400"></i> テキストから一括読み込み (Lua / Config / CSS等)
+          </label>
+          <span class="text-[10px] text-slate-400">`key = "#HEX"` 形式対応</span>
+        </div>
+        <textarea id="bulkTextInput" rows="3" placeholder='bg = "#24283b";&#10;bg_dark = "#1f2335";'
+          class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs font-mono text-slate-200 focus:outline-none focus:border-indigo-500"></textarea>
+        <div class="flex justify-end gap-2">
+          <button id="bulkImportAppendBtn"
+            class="bg-slate-700 hover:bg-slate-600 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">
+            既存に追加
+          </button>
+          <button id="bulkImportReplaceBtn"
+            class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs px-3 py-1.5 rounded-lg transition-colors">
+            パレットを置換
+          </button>
+        </div>
+      </div>
+
+      <!-- Current Palette List / Grid -->
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <span class="text-xs text-slate-400">現在のパレット内カラー (<span id="paletteCount">0</span>色)</span>
+          <button id="clearPaletteBtn" class="text-xs text-rose-400 hover:text-rose-300 transition-colors">
+            <i class="fa-solid fa-trash-can"></i> クリア
+          </button>
+        </div>
+        <div id="paletteGrid"
+          class="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-2 bg-slate-900/50 rounded-xl border border-slate-800">
+          <!-- Palette color pills inserted here dynamically -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Top Matches Ranking -->
+    <section class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6 backdrop-blur-md space-y-4">
+      <h2 class="text-lg font-semibold flex items-center gap-2 text-amber-400">
+        <i class="fa-solid fa-list-ol"></i> 近似カラーランキング（上位5色）
+      </h2>
+
+      <div id="rankingsList" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Ranking cards dynamically inserted here -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast"
+    class="fixed bottom-6 right-6 bg-slate-800 text-white border border-slate-700 px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 translate-y-20 opacity-0 transition-all duration-300 z-50">
+    <i class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastMsg" class="text-sm">クリップボードにコピーしました！</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Presets Data
+    const PRESETS = {
+      tailwind: [
+        {name: 'Slate 500', hex: '#64748b'}, {name: 'Red 500', hex: '#ef4444'},
+        {name: 'Orange 500', hex: '#f97316'}, {name: 'Amber 500', hex: '#f59e0b'},
+        {name: 'Yellow 500', hex: '#eab308'}, {name: 'Lime 500', hex: '#84cc16'},
+        {name: 'Green 500', hex: '#22c55e'}, {name: 'Emerald 500', hex: '#10b981'},
+        {name: 'Teal 500', hex: '#14b8a6'}, {name: 'Cyan 500', hex: '#06b6d4'},
+        {name: 'Sky 500', hex: '#0ea5e9'}, {name: 'Blue 500', hex: '#3b82f6'},
+        {name: 'Indigo 500', hex: '#6366f1'}, {name: 'Violet 500', hex: '#8b5cf6'},
+        {name: 'Purple 500', hex: '#a855f7'}, {name: 'Fuchsia 500', hex: '#d946ef'},
+        {name: 'Pink 500', hex: '#ec4899'}, {name: 'Rose 500', hex: '#f43f5e'}
+      ],
+      material: [
+        {name: 'Red', hex: '#f44336'}, {name: 'Pink', hex: '#e91e63'},
+        {name: 'Purple', hex: '#9c27b0'}, {name: 'Deep Purple', hex: '#673ab7'},
+        {name: 'Indigo', hex: '#3f51b5'}, {name: 'Blue', hex: '#2196f3'},
+        {name: 'Light Blue', hex: '#03a9f4'}, {name: 'Cyan', hex: '#00bcd4'},
+        {name: 'Teal', hex: '#009688'}, {name: 'Green', hex: '#4caf50'},
+        {name: 'Light Green', hex: '#8bc34a'}, {name: 'Lime', hex: '#cddc39'},
+        {name: 'Yellow', hex: '#ffeb3b'}, {name: 'Amber', hex: '#ffc107'},
+        {name: 'Orange', hex: '#ff9800'}, {name: 'Deep Orange', hex: '#ff5722'}
+      ],
+      websafe: [
+        {name: 'Black', hex: '#000000'}, {name: 'White', hex: '#FFFFFF'},
+        {name: 'Red', hex: '#FF0000'}, {name: 'Lime', hex: '#00FF00'},
+        {name: 'Blue', hex: '#0000FF'}, {name: 'Yellow', hex: '#FFFF00'},
+        {name: 'Cyan', hex: '#00FFFF'}, {name: 'Magenta', hex: '#FF00FF'},
+        {name: 'Silver', hex: '#C0C0C0'}, {name: 'Gray', hex: '#808080'},
+        {name: 'Maroon', hex: '#800000'}, {name: 'Olive', hex: '#808000'},
+        {name: 'Green', hex: '#008000'}, {name: 'Purple', hex: '#800080'},
+        {name: 'Teal', hex: '#008080'}, {name: 'Navy', hex: '#000080'}
+      ],
+      japanese: [
+        {name: '茜色 (Akaneiro)', hex: '#b7282e'}, {name: '山吹色 (Yamabukiiro)', hex: '#f8b500'},
+        {name: '萌黄色 (Moegiiro)', hex: '#006e54'}, {name: '浅葱色 (Asagiiro)', hex: '#00a3af'},
+        {name: '瑠璃色 (Ruriiro)', hex: '#1e50a2'}, {name: '藤色 (Fujiiro)', hex: '#bb92c4'},
+        {name: '桜色 (Sakurairo)', hex: '#fdeff2'}, {name: '墨色 (Sumiiro)', hex: '#302833'}
+      ]
+    };
+
+    let currentPalette = [...PRESETS.tailwind];
+
+    // COLOR SPACE CONVERSION (HEX -> RGB -> XYZ -> Lab)
+    function hexToRgb(hex) {
+      hex = hex.replace(/^#/, '');
+      if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      const num = parseInt(hex, 16);
+      return {
+        r: (num >> 16) & 255,
+        g: (num >> 8) & 255,
+        b: num & 255
+      };
+    }
+
+    function rgbToXyz(r, g, b) {
+      let r1 = r / 255, g1 = g / 255, b1 = b / 255;
+      r1 = r1 > 0.04045 ? Math.pow((r1 + 0.055) / 1.055, 2.4) : r1 / 12.92;
+      g1 = g1 > 0.04045 ? Math.pow((g1 + 0.055) / 1.055, 2.4) : g1 / 12.92;
+      b1 = b1 > 0.04045 ? Math.pow((b1 + 0.055) / 1.055, 2.4) : b1 / 12.92;
+
+      r1 *= 100; g1 *= 100; b1 *= 100;
+
+      const x = r1 * 0.4124 + g1 * 0.3576 + b1 * 0.1805;
+      const y = r1 * 0.2126 + g1 * 0.7152 + b1 * 0.0722;
+      const z = r1 * 0.0193 + g1 * 0.1192 + b1 * 0.9505;
+
+      return {x, y, z};
+    }
+
+    function xyzToLab(x, y, z) {
+      // Reference Observer 2°, Illuminant D65
+      const refX = 95.047, refY = 100.000, refZ = 108.883;
+      let x1 = x / refX, y1 = y / refY, z1 = z / refZ;
+
+      x1 = x1 > 0.008856 ? Math.pow(x1, 1 / 3) : (7.787 * x1) + (16 / 116);
+      y1 = y1 > 0.008856 ? Math.pow(y1, 1 / 3) : (7.787 * y1) + (16 / 116);
+      z1 = z1 > 0.008856 ? Math.pow(z1, 1 / 3) : (7.787 * z1) + (16 / 116);
+
+      const L = (116 * y1) - 16;
+      const a = 500 * (x1 - y1);
+      const b = 200 * (y1 - z1);
+
+      return {L, a, b};
+    }
+
+    function hexToLab(hex) {
+      const rgb = hexToRgb(hex);
+      const xyz = rgbToXyz(rgb.r, rgb.g, rgb.b);
+      return xyzToLab(xyz.x, xyz.y, xyz.z);
+    }
+
+    // CIE76 Delta E Distance
+    function deltaE76(lab1, lab2) {
+      const dL = lab1.L - lab2.L;
+      const da = lab1.a - lab2.a;
+      const db = lab1.b - lab2.b;
+      return Math.sqrt(dL * dL + da * da + db * db);
+    }
+
+    // DOM ELEMENTS
+    const colorPicker = document.getElementById('colorPicker');
+    const hexInput = document.getElementById('hexInput');
+    const targetPreview = document.getElementById('targetPreview');
+    const targetRgb = document.getElementById('targetRgb');
+    const targetLab = document.getElementById('targetLab');
+
+    const compareTarget = document.getElementById('compareTarget');
+    const compareTargetHex = document.getElementById('compareTargetHex');
+    const bestMatchBox = document.getElementById('bestMatchBox');
+    const bestMatchName = document.getElementById('bestMatchName');
+    const bestMatchHex = document.getElementById('bestMatchHex');
+    const matchScoreBadge = document.getElementById('matchScoreBadge');
+    const matchPercentage = document.getElementById('matchPercentage');
+    const matchProgressBar = document.getElementById('matchProgressBar');
+    const matchDescription = document.getElementById('matchDescription');
+
+    const paletteGrid = document.getElementById('paletteGrid');
+    const paletteCount = document.getElementById('paletteCount');
+    const rankingsList = document.getElementById('rankingsList');
+
+    // APP STATE & RENDERING
+    function updateApp() {
+      let hex = hexInput.value.trim();
+      if (!/^([0-9A-F]{3}){1,2}$/i.test(hex)) {
+        return; // Invalid Hex
+      }
+      if (hex.length === 3) {
+        hex = hex.split('').map(c => c + c).join('');
+      }
+      hex = '#' + hex;
+
+      // 1. Update Target Displays
+      targetPreview.style.backgroundColor = hex;
+      compareTarget.style.backgroundColor = hex;
+      compareTargetHex.textContent = hex.toUpperCase();
+      colorPicker.value = hex;
+
+      const rgb = hexToRgb(hex);
+      targetRgb.textContent = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
+
+      const targetLabObj = hexToLab(hex);
+      targetLab.textContent = `L:${Math.round(targetLabObj.L)} a:${Math.round(targetLabObj.a)} b:${Math.round(targetLabObj.b)}`;
+
+      // 2. Compute Distances for current Palette
+      if (currentPalette.length === 0) return;
+
+      const calculated = currentPalette.map(item => {
+        const lab = hexToLab(item.hex);
+        const dist = deltaE76(targetLabObj, lab);
+        return {...item, dist};
+      });
+
+      // Sort by closest distance
+      calculated.sort((a, b) => a.dist - b.dist);
+
+      // 3. Render Best Match
+      const best = calculated[0];
+      bestMatchBox.style.backgroundColor = best.hex;
+      bestMatchName.textContent = best.name;
+      bestMatchHex.textContent = best.hex.toUpperCase();
+      matchScoreBadge.textContent = `Delta-E: ${best.dist.toFixed(2)}`;
+
+      // Delta-E Interpretation
+      // <1: Imperceptible, 1-2: Perceptible through close observation, 2-10: Perceptible at a glance, >10: Distinct
+      let matchText = '';
+      let similarityPct = Math.max(0, Math.min(100, Math.round(100 - (best.dist * 1.5))));
+
+      if (best.dist < 1.0) {
+        matchText = '人間の目には実質的に全く同じ色に見えます。';
+      } else if (best.dist < 3.0) {
+        matchText = '極めて近い色です。違いを見分けるのは困難です。';
+      } else if (best.dist < 10.0) {
+        matchText = '似ている色ですが、並べると少し違いが分かります。';
+      } else {
+        matchText = '系統は近いですが、明らかに異なる色合いです。';
+      }
+
+      matchPercentage.textContent = `${similarityPct}% 近似`;
+      matchProgressBar.style.width = `${similarityPct}%`;
+      matchDescription.textContent = matchText;
+
+      // 4. Render Top 5 Rankings
+      rankingsList.innerHTML = '';
+      const top5 = calculated.slice(0, 5);
+      top5.forEach((item, idx) => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900/80 border border-slate-700/60 rounded-xl p-3 flex flex-col justify-between hover:border-indigo-500/50 transition-all cursor-pointer group';
+        card.onclick = () => copyToClipboard(item.hex, `${item.name} (${item.hex}) をコピーしました`);
+
+        card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold font-mono px-2 py-0.5 rounded-md ${idx === 0 ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-400'}">
+                                #${idx + 1}
+                            </span>
+                            <span class="text-[10px] text-slate-400 font-mono">ΔE: ${item.dist.toFixed(1)}</span>
+                        </div>
+                        <div class="h-16 rounded-lg mb-2 flex items-center justify-center relative overflow-hidden shadow-inner" style="background-color: ${item.hex}">
+                            <i class="fa-regular fa-copy opacity-0 group-hover:opacity-100 transition-opacity text-white bg-black/40 p-2 rounded-full"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="font-semibold text-xs text-white truncate">${item.name}</div>
+                        <div class="font-mono text-[11px] text-slate-400">${item.hex.toUpperCase()}</div>
+                    </div>
+                `;
+        rankingsList.appendChild(card);
+      });
+    }
+
+    function renderPaletteChips() {
+      paletteGrid.innerHTML = '';
+      paletteCount.textContent = currentPalette.length;
+
+      currentPalette.forEach((item, index) => {
+        const pill = document.createElement('div');
+        pill.className = 'flex items-center gap-2 bg-slate-800 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-200 group hover:border-slate-500 transition-colors';
+
+        pill.innerHTML = `
+                    <span class="w-3 h-3 rounded-full border border-white/20" style="background-color: ${item.hex}"></span>
+                    <span class="font-medium">${item.name}</span>
+                    <span class="font-mono text-slate-400 text-[10px]">${item.hex}</span>
+                    <button class="text-slate-500 hover:text-rose-400 ml-1 transition-colors" onclick="removePaletteColor(${index})">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                `;
+        paletteGrid.appendChild(pill);
+      });
+      updateApp();
+    }
+
+    function removePaletteColor(index) {
+      currentPalette.splice(index, 1);
+      renderPaletteChips();
+    }
+
+    // EVENT LISTENERS
+    colorPicker.addEventListener('input', (e) => {
+      hexInput.value = e.target.value.replace('#', '');
+      updateApp();
+    });
+
+    hexInput.addEventListener('input', updateApp);
+
+    // Preset Buttons
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.preset-btn').forEach(b => {
+          b.classList.remove('bg-indigo-600', 'text-white');
+          b.classList.add('bg-slate-700', 'text-slate-300');
+        });
+        btn.classList.remove('bg-slate-700', 'text-slate-300');
+        btn.classList.add('bg-indigo-600', 'text-white');
+
+        const key = btn.dataset.preset;
+        currentPalette = [...PRESETS[key]];
+        renderPaletteChips();
+      });
+    });
+
+    // Add Custom Color
+    document.getElementById('addCustomColorBtn').addEventListener('click', () => {
+      const nameInput = document.getElementById('customColorName');
+      const hexCustomInput = document.getElementById('customColorHex');
+
+      let hexVal = hexCustomInput.value.trim().replace('#', '');
+      let nameVal = nameInput.value.trim() || `#${hexVal}`;
+
+      if (/^([0-9A-F]{3}){1,2}$/i.test(hexVal)) {
+        if (hexVal.length === 3) hexVal = hexVal.split('').map(c => c + c).join('');
+        currentPalette.push({name: nameVal, hex: '#' + hexVal});
+        renderPaletteChips();
+        nameInput.value = '';
+        hexCustomInput.value = '';
+        showToast(`カラー「${nameVal}」を追加しました`);
+      } else {
+        showToast('正しいHEXコードを入力してください (例: #2ecc71)');
+      }
+    });
+
+    // Clear Palette
+    document.getElementById('clearPaletteBtn').addEventListener('click', () => {
+      currentPalette = [];
+      renderPaletteChips();
+    });
+
+    // Bulk Text Import Parser
+    function parseBulkText(text) {
+      // Regex to match key-value pairs like: key = "#HEX" or key: '#HEX'
+      const regex = /([a-zA-Z0-9_\-]+)\s*[:=]\s*["']?#?([0-9a-fA-F]{3,8})["']?/g;
+      const items = [];
+      let match;
+
+      while ((match = regex.exec(text)) !== null) {
+        let name = match[1].trim();
+        let hexVal = match[2].trim();
+
+        // Handle 3-digit vs 6-digit hex
+        if (hexVal.length === 3) {
+          hexVal = hexVal.split('').map(c => c + c).join('');
+        } else if (hexVal.length > 6) {
+          hexVal = hexVal.substring(0, 6); // Strip alpha channel if present
+        }
+
+        if (/^[0-9a-fA-F]{6}$/.test(hexVal)) {
+          items.push({name: name, hex: '#' + hexVal});
+        }
+      }
+      return items;
+    }
+
+    function handleBulkImport(replace = false) {
+      const text = document.getElementById('bulkTextInput').value;
+      const parsed = parseBulkText(text);
+
+      if (parsed.length === 0) {
+        showToast('有効な色定義が見つかりませんでした');
+        return;
+      }
+
+      if (replace) {
+        currentPalette = parsed;
+      } else {
+        currentPalette = [...currentPalette, ...parsed];
+      }
+
+      renderPaletteChips();
+      document.getElementById('bulkTextInput').value = '';
+      showToast(`${parsed.length} 色をパレットに読み込みました！`);
+    }
+
+    document.getElementById('bulkImportAppendBtn').addEventListener('click', () => handleBulkImport(false));
+    document.getElementById('bulkImportReplaceBtn').addEventListener('click', () => handleBulkImport(true));
+
+    // Copy Clipboard Helper
+    function copyToClipboard(text, msg) {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showToast(msg || `${text} をコピーしました！`);
+    }
+
+    document.getElementById('copyHexBtn').addEventListener('click', () => {
+      copyToClipboard('#' + hexInput.value, `HEXコード #${hexInput.value} をコピーしました`);
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      toastMsg.textContent = msg;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 2500);
+    }
+
+    // INITIALIZATION
+    window.onload = function () {
+      renderPaletteChips();
+    };
+  </script>
+</body>
+
+</html>
